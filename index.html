@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simon Says Game</title>
+    <style>
+        body {
+            text-align: center;
+            background-color: #282c34;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            transition: background-color 0.3s;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center align items vertically */
+            justify-content: center; /* Center align items horizontally */
+            height: 100vh; /* Full height of viewport */
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin: 20px 0;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .instructions {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #f99b45; /* A contrasting color for instructions */
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .line {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .btn {
+            height: 150px;
+            width: 150px;
+            border: 6px solid #333;
+            border-radius: 15%;
+            margin: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.3s;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        .yellow { background-color: #f99b45; }
+        .red { background-color: #d95980; }
+        .purple { background-color: #819ff9; }
+        .green { background-color: #63aac0; }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .flash {
+            animation: flashAnimation 0.18s linear;
+        }
+
+        .userflash {
+            background-color: rgba(0, 255, 0, 0.6);
+            animation: userFlashAnimation 0.25s linear;
+        }
+
+        @keyframes flashAnimation {
+            0% { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+
+        @keyframes userFlashAnimation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Start Button Style */
+        .start-btn {
+            padding: 10px 20px;
+            font-size: 1.5rem;
+            color: white;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin: 20px 0; /* Added margin for spacing */
+            display: inline-block; /* Keep it centered */
+        }
+
+        .start-btn:hover {
+            background-color: #45a049;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            h2 {
+                font-size: 1.2rem;
+            }
+            .btn {
+                height: 120px;
+                width: 120px;
+                font-size: 2rem;
+            }
+            .start-btn {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Simon Says Game</h1>
+    <h2 id="levelText">Press "Start" to begin!</h2>
+    <p class="instructions">Follow the sequence of lights and clicks. When it's your turn, click the buttons in the same order!</p>
+    <button class="start-btn" id="startButton">Start</button>
+    <div class="button-container" style="display: none;">
+        <div class="line">
+            <div class="btn red" id="red">1</div>
+            <div class="btn yellow" id="yellow">2</div>
+        </div>
+        <div class="line">
+            <div class="btn green" id="green">3</div>
+            <div class="btn purple" id="purple">4</div>
+        </div>
+    </div>
+    <script>
+        let gameSeq = [];
+        let userSeq = [];
+        const btns = ["yellow", "red", "purple", "green"];
+        let started = false;
+        let level = 0;
+        let highScore = 0;
+        const h2 = document.querySelector("#levelText");
+        const startButton = document.getElementById("startButton");
+        const buttonContainer = document.querySelector(".button-container");
+
+        startButton.addEventListener("click", function() {
+            if (!started) {
+                console.log("Game started");
+                started = true;
+                buttonContainer.style.display = "flex";
+                startButton.style.display = "none";
+                levelUp();
+            }
+        });
+
+        function btnFlash(btn) {
+            btn.classList.add("flash");
+            setTimeout(() => btn.classList.remove("flash"), 250);
+        }
+
+        function userFlash(btn) {
+            btn.classList.add("userflash");
+            setTimeout(() => btn.classList.remove("userflash"), 250);
+        }
+
+        function levelUp() {
+            userSeq = [];
+            level++;
+            h2.innerText = `Level ${level}`;
+            const randColor = btns[Math.floor(Math.random() * btns.length)];
+            gameSeq.push(randColor);
+            console.log(gameSeq);
+            const randBtn = document.querySelector(`.${randColor}`);
+            btnFlash(randBtn);
+        }
+
+        function checkAns(idx) {
+            if (userSeq[idx] === gameSeq[idx]) {
+                if (userSeq.length === gameSeq.length) {
+                    setTimeout(levelUp, 1000);
+                }
+            } else {
+                highScore = Math.max(highScore, level);
+                h2.innerHTML = `Game Over! Your score was <b>${level}</b> <br> Press "Start" to begin.<br> Highest score: ${highScore}`;
+                document.body.style.backgroundColor = "red";
+                setTimeout(() => document.body.style.backgroundColor = "#282c34", 150);
+                reset();
+            }
+        }
+
+        function btnPress() {
+            const btn = this;
+            userFlash(btn);
+            const userColor = btn.getAttribute("id");
+            userSeq.push(userColor);
+            checkAns(userSeq.length - 1);
+        }
+
+        const allBtns = document.querySelectorAll(".btn");
+        allBtns.forEach(btn => btn.addEventListener("click", btnPress));
+
+        function reset() {
+            started = false;
+            gameSeq = [];
+            userSeq = [];
+            level = 0;
+            buttonContainer.style.display = "none";
+            startButton.style.display = "block";
+        }
+    </script>
+</body>
+</html>
